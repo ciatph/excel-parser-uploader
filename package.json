@@ -1,0 +1,26 @@
+{
+  "name": "excel-parser-uploader",
+  "version": "1.0.0",
+  "description": "Data parser and uploader to Firestore of an excel file.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/scripts/main.js",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ciatph/excel-parser-uploader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ciatph/excel-parser-uploader/issues"
+  },
+  "homepage": "https://github.com/ciatph/excel-parser-uploader#readme",
+  "devDependencies": {
+    "eslint": "^8.29.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-promise": "^6.1.1"
+  }
+}
