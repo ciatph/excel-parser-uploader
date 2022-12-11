@@ -1,6 +1,8 @@
 node_modules/
-.xls
-.xlsx
-.csv
-.zip
-.env
+.vscode
+*.xls
+*.xlsx
+*.csv
+*.zip
+*.json
+*.env
