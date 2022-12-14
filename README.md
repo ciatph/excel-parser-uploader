@@ -104,7 +104,8 @@ Sub item is in the same line as the unordered main item.
 
    | Variable Name        | Description                                                                                                                                                                                                                                                                                    |
    | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | EXCEL_FILENAME       | Excel file name relative to to the `/src/01_recommendations` directory                                                                                                                                                                                                                         |
+   | EXCEL_FILENAME       | Excel file name relative to the `/src/01_recommendations` scripts  directory                                                                                                                                                                                                                   |
+   | CSV_FILENAME         | CSV file name relative to the `/src/02_crop_calendar` scripts                                                                                                                                                                                                                                  |
    | FIREBASE_SERVICE_ACC | The project's private key file contents, condensed into one line and minus all whitespace characters.<br><br>The service account JSON file is generated from the Firebase project's **Project Settings** page, on **Project Settings** -> **Service accounts** -> **Generate new private key** |
    | FIREBASE_PRIVATE_KEY | The `private_key` entry from the service account JSON file.<br> <blockquote>**NOTE:** Take note to make sure that the value starts and ends with a double-quote on WINDOWS OS localhost. Some systems may or may not require the double-quotes (i.e., Ubuntu).</blockquote>                    |
 
@@ -123,6 +124,14 @@ Fix lint errors.
 Normalize an unconventional, complex excel file into an array of simple JS objects with columns containing messy (ordered and unordered) bullet lists converted into organized HTML list tags.
 
 > **WARNING:** The script does not support `-` (dash) symbols.
+
+### `npm run process:calendar`
+
+Normalize and upload the new cropping calendar data.
+
+### `npm run process:details`
+
+Normalize and upload the new municipalities and other details attached to the crop recommendations.
 
 @ciatph<br>
 20221205

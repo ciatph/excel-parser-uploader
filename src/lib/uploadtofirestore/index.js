@@ -22,7 +22,6 @@ module.exports.uploadToFirestore = async (collectionName, docName, jsonData) => 
       .doc(docName)
       .set(jsonData)
 
-    console.log(docRef)
     return docRef
   } catch (err) {
     throw new Error(err.message)
