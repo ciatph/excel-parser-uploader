@@ -2,7 +2,7 @@ const { FirestoreData } = require('csv-firestore')
 const firestore = new FirestoreData()
 
 /**
- * Uploads a Firestore document containing crop recommendations data under the n_list_crop_recommendations collection
+ * Create or update the contents of a Firestore document under a Firestore collection
  * @param {String} collectionName - Firestore collection name
  * @param {String} docName - Firestore document name
  * @param {Object} jsonData - JSON data to upload in the Firestore docName document
