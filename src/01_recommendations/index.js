@@ -1,7 +1,7 @@
 require('dotenv').config()
 const path = require('path')
+const { FirestoreData } = require('csv-firestore')
 const XLSXWrapper = require('../lib/xlsxwrapper')
-const StringListToHTML = require('../lib/stringlisttohtml')
 
 // Excel file column names
 const COLUMN_NAMES = {
@@ -14,34 +14,62 @@ const COLUMN_NAMES = {
   PRACTICE_TAGALOG: 'practice_tagalog'
 }
 
-const main = () => {
+const EXCEL_COLUMN_NAMES = {
+  'Crop Stage': COLUMN_NAMES.CROP_STAGE,
+  'Farm Operation': COLUMN_NAMES.FARM_OPERATION,
+  RSCOA: COLUMN_NAMES.FORECAST,
+  __EMPTY: COLUMN_NAMES.IMPACT,
+  __EMPTY_1: COLUMN_NAMES.IMPACT_TAGALOG,
+  __EMPTY_2: COLUMN_NAMES.PRACTICE,
+  __EMPTY_3: COLUMN_NAMES.PRACTICE_TAGALOG
+  // '__EMPTY_4': SMS,
+}
+
+const main = async () => {
   // Excel file path
   const filePath = path.join(__dirname, process.env.EXCEL_FILENAME)
-
   const excel = new XLSXWrapper(filePath)
-  const textToHTML = new StringListToHTML()
+
+  // CSV and Firestore handler
+  const firestore = new FirestoreData()
 
   // Read data from excel file
   const seasonalData = excel.getDataSheet(0)
 
+  const jsonData = {
+    type: 'seasonal',
+    description: 'Seasonal Crop Recommendations',
+    date_created: firestore.admin.firestore.Timestamp.now()
+  }
+
   // Normalize, clean and convert list text content to HTML tags
-  const data = seasonalData.reduce((list, item, index) => {
-    const t = Object.values(item)
+  jsonData.data = seasonalData.reduce((list, item, index) => {
     if (index > 0) {
-      list.push({
-        [COLUMN_NAMES.CROP_STAGE]: t[0],
-        [COLUMN_NAMES.FARM_OPERATION]: t[1],
-        [COLUMN_NAMES.FORECAST]: t[2],
-        [COLUMN_NAMES.IMPACT]: textToHTML.convert(t[3]),
-        [COLUMN_NAMES.IMPACT_TAGALOG]: textToHTML.convert(t[4]),
-        [COLUMN_NAMES.PRACTICE]: textToHTML.convert(t[5]),
-        [COLUMN_NAMES.PRACTICE_TAGALOG]: textToHTML.convert(t[6])
-      })
+      const obj = {}
+
+      for (const key in EXCEL_COLUMN_NAMES) {
+        obj[EXCEL_COLUMN_NAMES[key]] = item[key] || ''
+      }
+
+      list.push(obj)
     }
+
     return list
   }, [])
 
-  console.log(data)
+  try {
+    // Upload data to Firestore
+    const docRef = await firestore.db
+      .collection('n_list_crop_recommendations')
+      .doc('seasonal')
+      .set(jsonData)
+
+    console.log(docRef)
+    process.exit(0)
+  } catch (err) {
+    console.log(`[ERROR]: ${err.message}`)
+    process.exit(1)
+  }
 }
 
 main()

@@ -25,6 +25,7 @@
     "eslint-plugin-promise": "^6.1.1"
   },
   "dependencies": {
+    "csv-firestore": "^1.0.9",
     "dotenv": "^16.0.3",
     "xlsx": "^0.18.5"
   }
