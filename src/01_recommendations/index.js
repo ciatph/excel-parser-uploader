@@ -1,70 +1,48 @@
 require('dotenv').config()
 const path = require('path')
-const { FirestoreData } = require('csv-firestore')
-const XLSXWrapper = require('../lib/xlsxwrapper')
-
-// Excel file column names
-const COLUMN_NAMES = {
-  CROP_STAGE: 'crop_stage',
-  FARM_OPERATION: 'farm_operation',
-  FORECAST: 'forecast',
-  IMPACT: 'impact',
-  IMPACT_TAGALOG: 'impact_tagalog',
-  PRACTICE: 'practice',
-  PRACTICE_TAGALOG: 'practice_tagalog'
-}
-
-const EXCEL_COLUMN_NAMES = {
-  'Crop Stage': COLUMN_NAMES.CROP_STAGE,
-  'Farm Operation': COLUMN_NAMES.FARM_OPERATION,
-  RSCOA: COLUMN_NAMES.FORECAST,
-  __EMPTY: COLUMN_NAMES.IMPACT,
-  __EMPTY_1: COLUMN_NAMES.IMPACT_TAGALOG,
-  __EMPTY_2: COLUMN_NAMES.PRACTICE,
-  __EMPTY_3: COLUMN_NAMES.PRACTICE_TAGALOG
-  // '__EMPTY_4': SMS,
-}
+const SeasonalTab = require('./classes/seasonaltab')
+const TendayTab = require('./classes/tendaytab')
+const SpecialTab = require('./classes/specialtab')
+const { uploadToFirestore } = require('../lib/uploadtofirestore')
+const { extractExcelData } = require('./extract')
 
 const main = async () => {
+  const data = []
+  const query = []
+
   // Excel file path
   const filePath = path.join(__dirname, process.env.EXCEL_FILENAME)
-  const excel = new XLSXWrapper(filePath)
 
-  // CSV and Firestore handler
-  const firestore = new FirestoreData()
+  // Excel tabs column names definitions
+  const excelTabs = [
+    new SeasonalTab(),
+    new TendayTab(),
+    new SpecialTab()
+  ]
 
-  // Read data from excel file
-  const seasonalData = excel.getDataSheet(0)
+  try {
+    // Extract data from excel sheet tabs
+    console.log('Extracting data from excel sheets...')
 
-  const jsonData = {
-    type: 'seasonal',
-    description: 'Seasonal Crop Recommendations',
-    date_created: firestore.admin.firestore.Timestamp.now()
+    excelTabs.forEach((item, index) => {
+      data.push(extractExcelData(item, filePath))
+      query.push(uploadToFirestore('n_list_crop_recommendations', item.type, data[index].recommendations))
+    })
+  } catch (err) {
+    console.log(`[ERROR]: ${err.message}`)
+    process.exit(1)
   }
-
-  // Normalize, clean and convert list text content to HTML tags
-  jsonData.data = seasonalData.reduce((list, item, index) => {
-    if (index > 0) {
-      const obj = {}
-
-      for (const key in EXCEL_COLUMN_NAMES) {
-        obj[EXCEL_COLUMN_NAMES[key]] = item[key] || ''
-      }
-
-      list.push(obj)
-    }
-
-    return list
-  }, [])
 
   try {
     // Upload data to Firestore
-    const docRef = await firestore.db
-      .collection('n_list_crop_recommendations')
-      .doc('seasonal')
-      .set(jsonData)
+    let logs = 'Extracted data:\n'
+    data.forEach(item => {
+      logs += `${item.recommendations.type}: ${item.recommendations.data.length} rows\n`
+    })
 
-    console.log(docRef)
+    console.log(`${logs}\nUploading data to Firestore...`)
+    await Promise.all(query)
+    console.log('Data upload success!')
     process.exit(0)
   } catch (err) {
     console.log(`[ERROR]: ${err.message}`)
