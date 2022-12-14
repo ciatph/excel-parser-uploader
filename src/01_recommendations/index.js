@@ -1,47 +1,53 @@
 require('dotenv').config()
 const path = require('path')
-const XLSXWrapper = require('../lib/xlsxwrapper')
-const StringListToHTML = require('../lib/stringlisttohtml')
+const SeasonalTab = require('./classes/seasonaltab')
+const TendayTab = require('./classes/tendaytab')
+const SpecialTab = require('./classes/specialtab')
+const { uploadToFirestore } = require('../lib/uploadtofirestore')
+const { extractExcelData } = require('./extract')
 
-// Excel file column names
-const COLUMN_NAMES = {
-  CROP_STAGE: 'crop_stage',
-  FARM_OPERATION: 'farm_operation',
-  FORECAST: 'forecast',
-  IMPACT: 'impact',
-  IMPACT_TAGALOG: 'impact_tagalog',
-  PRACTICE: 'practice',
-  PRACTICE_TAGALOG: 'practice_tagalog'
-}
+const main = async () => {
+  const data = []
+  const query = []
 
-const main = () => {
   // Excel file path
   const filePath = path.join(__dirname, process.env.EXCEL_FILENAME)
 
-  const excel = new XLSXWrapper(filePath)
-  const textToHTML = new StringListToHTML()
+  // Excel tabs column names definitions
+  const excelTabs = [
+    new SeasonalTab(),
+    new TendayTab(),
+    new SpecialTab()
+  ]
 
-  // Read data from excel file
-  const seasonalData = excel.getDataSheet(0)
+  try {
+    // Extract data from excel sheet tabs
+    console.log('Extracting data from excel sheets...')
 
-  // Normalize, clean and convert list text content to HTML tags
-  const data = seasonalData.reduce((list, item, index) => {
-    const t = Object.values(item)
-    if (index > 0) {
-      list.push({
-        [COLUMN_NAMES.CROP_STAGE]: t[0],
-        [COLUMN_NAMES.FARM_OPERATION]: t[1],
-        [COLUMN_NAMES.FORECAST]: t[2],
-        [COLUMN_NAMES.IMPACT]: textToHTML.convert(t[3]),
-        [COLUMN_NAMES.IMPACT_TAGALOG]: textToHTML.convert(t[4]),
-        [COLUMN_NAMES.PRACTICE]: textToHTML.convert(t[5]),
-        [COLUMN_NAMES.PRACTICE_TAGALOG]: textToHTML.convert(t[6])
-      })
-    }
-    return list
-  }, [])
+    excelTabs.forEach((item, index) => {
+      data.push(extractExcelData(item, filePath))
+      query.push(uploadToFirestore('n_list_crop_recommendations', item.type, data[index].recommendations))
+    })
+  } catch (err) {
+    console.log(`[ERROR]: ${err.message}`)
+    process.exit(1)
+  }
 
-  console.log(data)
+  try {
+    // Upload data to Firestore
+    let logs = 'Extracted data:\n'
+    data.forEach(item => {
+      logs += `${item.recommendations.type}: ${item.recommendations.data.length} rows\n`
+    })
+
+    console.log(`${logs}\nUploading data to Firestore...`)
+    await Promise.all(query)
+    console.log('Data upload success!')
+    process.exit(0)
+  } catch (err) {
+    console.log(`[ERROR]: ${err.message}`)
+    process.exit(1)
+  }
 }
 
 main()
