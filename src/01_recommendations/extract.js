@@ -22,7 +22,7 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
     date_created: ''
   }
 
-  // Normalize, clean and convert list text content to HTML tags
+  // Normalize and clean cell contents
   recommendations.data = excelData.reduce((list, item, index) => {
     if (index > 0) {
       const obj = {}
