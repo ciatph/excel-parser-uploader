@@ -7,6 +7,7 @@ const { uploadToFirestore } = require('../lib/uploadtofirestore')
 const { extractExcelData } = require('./src/extract')
 const { dataToCsv } = require('./src/tocsv')
 
+// Path: /n_list_crop_recommendations/{type}.data[]
 const main = async () => {
   const data = []
   const query = []
