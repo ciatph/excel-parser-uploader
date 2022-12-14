@@ -1,10 +1,10 @@
 require('dotenv').config()
 const path = require('path')
-const SeasonalTab = require('./classes/seasonaltab')
-const TendayTab = require('./classes/tendaytab')
-const SpecialTab = require('./classes/specialtab')
+const SeasonalTab = require('./src/classes/seasonaltab')
+const TendayTab = require('./src/classes/tendaytab')
+const SpecialTab = require('./src/classes/specialtab')
 const { uploadToFirestore } = require('../lib/uploadtofirestore')
-const { extractExcelData } = require('./extract')
+const { extractExcelData } = require('./src/extract')
 
 const main = async () => {
   const data = []
