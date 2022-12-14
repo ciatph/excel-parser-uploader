@@ -108,9 +108,6 @@ Sub item is in the same line as the unordered main item.
    | FIREBASE_SERVICE_ACC | The project's private key file contents, condensed into one line and minus all whitespace characters.<br><br>The service account JSON file is generated from the Firebase project's **Project Settings** page, on **Project Settings** -> **Service accounts** -> **Generate new private key** |
    | FIREBASE_PRIVATE_KEY | The `private_key` entry from the service account JSON file.<br> <blockquote>**NOTE:** Take note to make sure that the value starts and ends with a double-quote on WINDOWS OS localhost. Some systems may or may not require the double-quotes (i.e., Ubuntu).</blockquote>                    |
 
-4. See the excel parser script's example usage on<br>
-`/src/01_recommendations/index.js`
-
 ## Available scripts
 
 ### `npm run lint`

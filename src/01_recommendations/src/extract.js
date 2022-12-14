@@ -1,4 +1,4 @@
-const XLSXWrapper = require('../lib/xlsxwrapper')
+const XLSXWrapper = require('../../lib/xlsxwrapper')
 
 /**
  * Extract normalized recommendations data and other metadata from an excel sheet tab
