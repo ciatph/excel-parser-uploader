@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/scripts/main.js",
-    "parse": "node src/01_recommendations/index.js",
+    "process:recommendations": "node src/01_recommendations",
+    "process:calendar": "node src/02_crop_calendar",
+    "process:details": "node src/03_recommendations_detail",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
   },
@@ -25,6 +27,7 @@
     "eslint-plugin-promise": "^6.1.1"
   },
   "dependencies": {
+    "csv-firestore": "^1.0.9",
     "dotenv": "^16.0.3",
     "xlsx": "^0.18.5"
   }

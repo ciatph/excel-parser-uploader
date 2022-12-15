@@ -1,47 +1,80 @@
 require('dotenv').config()
 const path = require('path')
-const XLSXWrapper = require('../lib/xlsxwrapper')
-const StringListToHTML = require('../lib/stringlisttohtml')
+const SeasonalTab = require('./src/classes/seasonaltab')
+const TendayTab = require('./src/classes/tendaytab')
+const SpecialTab = require('./src/classes/specialtab')
+const { uploadToFirestore } = require('../lib/uploadtofirestore')
+const { extractExcelData } = require('./src/extract')
+const { dataToCsv } = require('./src/tocsv')
 
-// Excel file column names
-const COLUMN_NAMES = {
-  CROP_STAGE: 'crop_stage',
-  FARM_OPERATION: 'farm_operation',
-  FORECAST: 'forecast',
-  IMPACT: 'impact',
-  IMPACT_TAGALOG: 'impact_tagalog',
-  PRACTICE: 'practice',
-  PRACTICE_TAGALOG: 'practice_tagalog'
-}
+// Path: /n_list_crop_recommendations/{type}.data[]
+const main = async () => {
+  const data = []
+  const query = []
+  const upload = false
 
-const main = () => {
   // Excel file path
   const filePath = path.join(__dirname, process.env.EXCEL_FILENAME)
 
-  const excel = new XLSXWrapper(filePath)
-  const textToHTML = new StringListToHTML()
+  // Excel tabs column names definitions
+  const excelTabs = [
+    new SeasonalTab(),
+    new TendayTab(),
+    new SpecialTab()
+  ]
 
-  // Read data from excel file
-  const seasonalData = excel.getDataSheet(0)
+  try {
+    // Extract data from excel sheet tabs
+    console.log('Extracting data from excel sheets...')
 
-  // Normalize, clean and convert list text content to HTML tags
-  const data = seasonalData.reduce((list, item, index) => {
-    const t = Object.values(item)
-    if (index > 0) {
-      list.push({
-        [COLUMN_NAMES.CROP_STAGE]: t[0],
-        [COLUMN_NAMES.FARM_OPERATION]: t[1],
-        [COLUMN_NAMES.FORECAST]: t[2],
-        [COLUMN_NAMES.IMPACT]: textToHTML.convert(t[3]),
-        [COLUMN_NAMES.IMPACT_TAGALOG]: textToHTML.convert(t[4]),
-        [COLUMN_NAMES.PRACTICE]: textToHTML.convert(t[5]),
-        [COLUMN_NAMES.PRACTICE_TAGALOG]: textToHTML.convert(t[6])
+    excelTabs.forEach((item, index) => {
+      data.push(extractExcelData(item, filePath))
+    })
+  } catch (err) {
+    console.log(`[ERROR]: ${err.message}`)
+    process.exit(1)
+  }
+
+  // Write unique crop stages to CSV
+  const uniqueStages = [...data[0].cropstages, ...data[1].cropstages, ...data[2].cropstages]
+    .filter((x, i, a) => a.indexOf(x) === i)
+    .reduce((list, item, index) => {
+      list.push({ id: index + 1, name: item })
+      return list
+    }, [])
+
+  // Write unique farm operations to CSV
+  const uniqueActivities = [...data[0].farmoperations, ...data[1].farmoperations, ...data[2].farmoperations]
+    .filter((x, i, a) => a.indexOf(x) === i)
+    .reduce((list, item, index) => {
+      list.push({ id: index + 1, name: item })
+      return list
+    }, [])
+
+  dataToCsv(uniqueStages, path.join(__dirname, 'crop_stages.csv'))
+  dataToCsv(uniqueActivities, path.join(__dirname, 'farm_operations.csv'))
+
+  if (upload) {
+    try {
+      data.forEach((item, index) => {
+        query.push(uploadToFirestore('n_list_crop_recommendations', item.recommendations.type, item.recommendations))
       })
-    }
-    return list
-  }, [])
 
-  console.log(data)
+      // Upload data to Firestore
+      let logs = 'Extracted data:\n'
+      data.forEach(item => {
+        logs += `${item.recommendations.type}: ${item.recommendations.data.length} rows\n`
+      })
+
+      console.log(`${logs}\nUploading data to Firestore...`)
+      await Promise.all(query)
+      console.log('Data upload success!')
+      process.exit(0)
+    } catch (err) {
+      console.log(`[ERROR]: ${err.message}`)
+      process.exit(1)
+    }
+  }
 }
 
 main()

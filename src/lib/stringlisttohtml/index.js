@@ -25,7 +25,9 @@ class StringListToHTML {
 
   /**
    * Converts text that contains 1-level nested ORDERED or UNORDERED list (numbers and bullets) to HTML tags
-   * @param {String} string - Long text that contains numbers and bullets
+   * @param {String} stringArr - String array of text that with each element containing
+   *    - this.IS_NUMBER for list items beginning with a number (ordered list)
+   *    - this.SUBITEM for list items beginning with a bullet symbol (unordered list)
    * @returns {String} 1-level input list text converted to HTML list tags
    */
   textToHTML = (stringArr) => {
