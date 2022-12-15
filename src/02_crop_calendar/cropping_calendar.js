@@ -83,39 +83,41 @@ class CroppingCalendar extends CsvToFireStore {
         key = 'municipality'
       }
 
+      const value = row[item].trim()
+
       // Extract unique provinces
-      if (key === 'province' && !this.itemExists('province', row[item]) && row[item] !== '') {
+      if (key === 'province' && !this.itemExists('province', value) && value !== '') {
         this.provinces.push({
           id: this.provinces.length + 1,
-          name: row[item].trim()
+          name: value
         })
       }
 
       // Extract unique municipalities
-      if (key === 'municipality' && row[item] !== '') {
-        const combo = `${row.prov.trim()}|${row[item].trim()}`
+      if (key === 'municipality' && value !== '') {
+        const combo = `${row.prov.trim()}|${value}`
 
         if (!this.itemExists('municipality', combo)) {
           this.municipalities.push({
             id: this.municipalities.length + 1,
             province: row.prov.trim(),
-            name: row[item].trim(),
+            name: value,
             unique: combo
           })
         }
       }
 
       // Extract unique crop names
-      if (key === 'crop' && !this.itemExists('crop', row[item]) && row[item] !== '') {
+      if (key === 'crop' && !this.itemExists('crop', value) && value !== '') {
         this.crops.push({
           id: this.crops.length + 1,
-          name: row[item].trim()
+          name: value
         })
       }
 
       // Extract unique crop stages
       if (!['province', 'municipality', 'crop'].includes(key)) {
-        let cleanStage = row[item].trim()
+        let cleanStage = value
         cleanStage = cleanStage.substring(0, cleanStage.indexOf('_'))
 
         if (!this.itemExists('crop_stage', cleanStage) && cleanStage !== '') {
@@ -128,7 +130,7 @@ class CroppingCalendar extends CsvToFireStore {
       }
 
       if (include && ['province', 'municipality', 'crop'].includes(key)) {
-        obj[key] = row[item].trim()
+        obj[key] = value
       }
     })
 

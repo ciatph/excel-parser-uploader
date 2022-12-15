@@ -1,8 +1,9 @@
 require('dotenv').config()
 const path = require('path')
 const CroppingCalendar = require('./cropping_calendar')
+const { uploadToFirestore } = require('../lib/uploadtofirestore')
 
-// Path: /n_cropping_calendar_merged
+// Path: /n_cropping_calendar_merged/{province}.data[]
 const main = async () => {
   const handler = new CroppingCalendar(path.resolve(__dirname, process.env.CSV_FILENAME))
   const upload = false
@@ -21,9 +22,29 @@ const main = async () => {
     await handler.readCSV()
 
     if (upload) {
-      console.log('\nUploading data to firestore...')
-      const query = [handler.firestoreUpload('n_cropping_calendar_merged')]
+      // Group data by province
+      const data = handler.data().reduce((group, row, index) => {
+        const province = row.province.trim()
 
+        if (group[province] === undefined) {
+          group[province] = []
+        }
+
+        const obj = {}
+        for (const key in row) {
+          if (!['id', 'province'].includes(key)) {
+            obj[key] = row[key].trim()
+          }
+        }
+
+        group[province].push(obj)
+        return { ...group }
+      }, {})
+
+      console.log('\nUploading data to firestore...')
+      const query = []
+
+      // Upload full collections
       for (const collection in newTables) {
         query.push(handler.firestoreUpload(
           newTables[collection],
@@ -34,7 +55,21 @@ const main = async () => {
         ))
       }
 
+      // Upload calendar documents
+      let logs = ''
+
+      for (const province in data) {
+        // Logs
+        logs += `${province}: ${data[province].length} items\n`
+
+        // Upload query
+        query.push(uploadToFirestore('n_cropping_calendar_merged', province, { data: data[province] }))
+      }
+
+      console.log(logs)
+      console.log('Uploading data to Firestore...')
       await Promise.all(query)
+      console.log('Upload success!')
     }
 
     if (write) {
