@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/scripts/main.js",
-    "process:recommendations": "node src/01_recommendations/index.js",
+    "process:recommendations": "node src/01_recommendations",
+    "process:calendar": "node src/02_crop_calendar",
+    "process:details": "node src/03_recommendations_detail",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
   },
