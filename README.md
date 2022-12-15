@@ -121,9 +121,7 @@ Fix lint errors.
 
 ### `npm run process:recommendations`
 
-Normalize an unconventional, complex excel file into an array of simple JS objects with columns containing messy (ordered and unordered) bullet lists converted into organized HTML list tags.
-
-> **WARNING:** The script does not support `-` (dash) symbols.
+Normalize an  excel file into an array of simple JS objects with columns containing messy HTML tags bullet lists.
 
 ### `npm run process:calendar`
 
