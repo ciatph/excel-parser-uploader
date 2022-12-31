@@ -23,7 +23,7 @@ class SeasonalTab extends ExcelTabDefinition {
     this.NORMAL_FORECAST_NAMES = {
       'WAY BELOW NORMAL': 'Way Below Normal',
       'BELOW NORMAL': 'Below Normal',
-      'NEAR NORMAL': 'Near Normal',
+      'NEAR NORMAL': 'Near normal',
       'ABOVE NORMAL': 'Above Normal'
     }
   }

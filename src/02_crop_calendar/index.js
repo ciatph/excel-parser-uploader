@@ -41,7 +41,7 @@ const main = async () => {
         return { ...group }
       }, {})
 
-      console.log('\nUploading data to firestore...')
+      console.log('\nUploading list data to firestore...')
       const query = []
 
       // Upload full collections
@@ -63,11 +63,28 @@ const main = async () => {
         logs += `${province}: ${data[province].length} items\n`
 
         // Upload query
-        query.push(uploadToFirestore('n_cropping_calendar_merged', province, { data: data[province] }))
+        query.push(uploadToFirestore('n_cropping_calendar_lite', province, { data: data[province] }))
       }
 
       console.log(logs)
-      console.log('Uploading data to Firestore...')
+      console.log('Uploading calendar data to Firestore...')
+
+      // Upload list data as documents
+      console.log('Uploading lists in a single Firestore document...')
+
+      query.push(uploadToFirestore('constant_data', 'provinces', {
+        data: handler.provinces.reduce((list, province, index) => {
+          const temp = { id: province.id, label: province.name }
+
+          temp.municipalities = handler.municipalities.filter((municipality) => municipality.province === province.name)
+            .sort((a, b) => a.name > b.name ? 1 : (a.name < b.name) ? -1 : 0)
+            .map((municipality, id) => ({ id, label: municipality.name }))
+
+          list.push(temp)
+          return list
+        }, [])
+      }))
+
       await Promise.all(query)
       console.log('Upload success!')
     }
