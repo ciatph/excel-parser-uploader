@@ -32,11 +32,14 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
         let value = item[key] || ''
         value = value.trim()
 
-        // Normalize the forecast text
-        if (ExcelTab.type === RECOMMEDATIONS_TYPE.SEASONAL &&
-          ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.FORECAST
-        ) {
-          value = ExcelTab.NORMAL_FORECAST_NAMES[value]
+        switch (ExcelTab.type) {
+          case RECOMMEDATIONS_TYPE.SEASONAL:
+            // Normalize the seasonal forecast text
+            if (ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.FORECAST) {
+              value = ExcelTab.NORMAL_FORECAST_NAMES[value]
+            }
+            break
+          default: break
         }
 
         obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = value
@@ -47,6 +50,28 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
 
     return list
   }, [])
+
+  // Normalize the special recommendations' farm operations
+  if (ExcelTab.type === RECOMMEDATIONS_TYPE.SPECIAL) {
+    recommendations.data = recommendations.data.reduce((list, item, index) => {
+      const farmoperation = item[ExcelTab.NORMAL_COLUMN_NAMES.FARM_OPERATION]
+
+      // Expand the merged farm operations vertically
+      if (farmoperation.includes('/') && farmoperation !== 'Planting/Transplanting') {
+        const farmoperations = farmoperation.split('/').map(operations => operations.trim())
+
+        farmoperations.forEach((operation) => {
+          const temp = { ...item }
+          temp[ExcelTab.NORMAL_COLUMN_NAMES.FARM_OPERATION] = operation
+          list.push(temp)
+        })
+      } else {
+        list.push(item)
+      }
+
+      return list
+    }, [])
+  }
 
   // List unique crop stages
   const cropstages = recommendations.data.map(x => x[ExcelTab.NORMAL_COLUMN_NAMES.CROP_STAGE])
