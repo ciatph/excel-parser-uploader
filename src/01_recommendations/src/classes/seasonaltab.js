@@ -18,6 +18,14 @@ class SeasonalTab extends ExcelTabDefinition {
       __EMPTY_2: this.NORMAL_COLUMN_NAMES.PRACTICE,
       __EMPTY_3: this.NORMAL_COLUMN_NAMES.PRACTICE_TAGALOG
     }
+
+    /** Normalized weather forecast text */
+    this.NORMAL_FORECAST_NAMES = {
+      'WAY BELOW NORMAL': 'Way Below Normal',
+      'BELOW NORMAL': 'Below Normal',
+      'NEAR NORMAL': 'Near Normal',
+      'ABOVE NORMAL': 'Above Normal'
+    }
   }
 }
 

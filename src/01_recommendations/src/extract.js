@@ -1,4 +1,5 @@
 const XLSXWrapper = require('../../lib/xlsxwrapper')
+const { RECOMMEDATIONS_TYPE } = require('./constants')
 
 /**
  * Extract normalized recommendations data and other metadata from an excel sheet tab
@@ -28,8 +29,17 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
       const obj = {}
 
       for (const key in ExcelTab.EXCEL_COLUMN_NAMES) {
-        obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = item[key] || ''
-        obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = obj[ExcelTab.EXCEL_COLUMN_NAMES[key]].trim()
+        let value = item[key] || ''
+        value = value.trim()
+
+        // Normalize the forecast text
+        if (ExcelTab.type === RECOMMEDATIONS_TYPE.SEASONAL &&
+          ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.FORECAST
+        ) {
+          value = ExcelTab.NORMAL_FORECAST_NAMES[value]
+        }
+
+        obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = value
       }
 
       list.push(obj)
