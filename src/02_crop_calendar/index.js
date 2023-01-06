@@ -30,7 +30,8 @@ const main = async () => {
           group[province] = []
         }
 
-        const obj = {}
+        const obj = { province }
+
         for (const key in row) {
           if (!['id', 'province'].includes(key)) {
             obj[key] = row[key].trim()
