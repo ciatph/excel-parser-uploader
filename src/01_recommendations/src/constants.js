@@ -1,7 +1,7 @@
 const RECOMMEDATIONS_TYPE = {
   SEASONAL: 'seasonal',
   TENDAY: 'tenday',
-  SPECIAL: 'sepcial'
+  SPECIAL: 'special'
 }
 
 module.exports = {
