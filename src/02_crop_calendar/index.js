@@ -3,7 +3,7 @@ const path = require('path')
 const CroppingCalendar = require('./cropping_calendar')
 const { uploadToFirestore } = require('../lib/uploadtofirestore')
 
-// Path: /n_cropping_calendar_merged/{province}.data[]
+// Path: /n_cropping_calendar_lite/{province}.data[]
 const main = async () => {
   const handler = new CroppingCalendar(path.resolve(__dirname, process.env.CSV_FILENAME))
   const upload = false
@@ -11,8 +11,8 @@ const main = async () => {
 
   // Cropping Calendar-specific tables and firestore collection names
   const newTables = {
-    provinces: 'n_provinces',
-    municipalities: 'n_municipalities',
+    // provinces: 'n_provinces',
+    // municipalities: 'n_municipalities',
     crops: 'n_crops',
     crop_stages: 'n_crop_stages'
   }
@@ -30,7 +30,8 @@ const main = async () => {
           group[province] = []
         }
 
-        const obj = {}
+        const obj = { province }
+
         for (const key in row) {
           if (!['id', 'province'].includes(key)) {
             obj[key] = row[key].trim()
@@ -41,7 +42,7 @@ const main = async () => {
         return { ...group }
       }, {})
 
-      console.log('\nUploading data to firestore...')
+      console.log('\nUploading list data to firestore...')
       const query = []
 
       // Upload full collections
@@ -63,11 +64,29 @@ const main = async () => {
         logs += `${province}: ${data[province].length} items\n`
 
         // Upload query
-        query.push(uploadToFirestore('n_cropping_calendar_merged', province, { data: data[province] }))
+        query.push(uploadToFirestore('n_cropping_calendar_lite', province, { data: data[province] }))
       }
 
       console.log(logs)
-      console.log('Uploading data to Firestore...')
+      console.log('Uploading calendar data to Firestore...')
+
+      // Upload list data as documents
+      console.log('Uploading lists in a single Firestore document...')
+
+      // Upload the list of provinces and respective municipalities for use as constant, static values
+      query.push(uploadToFirestore('constant_data', 'provinces', {
+        data: handler.provinces.reduce((list, province, index) => {
+          const temp = { id: province.id, label: province.name }
+
+          temp.municipalities = handler.municipalities.filter((municipality) => municipality.province === province.name)
+            .sort((a, b) => a.name > b.name ? 1 : (a.name < b.name) ? -1 : 0)
+            .map((municipality, id) => ({ id, label: municipality.name }))
+
+          list.push(temp)
+          return list
+        }, [])
+      }))
+
       await Promise.all(query)
       console.log('Upload success!')
     }

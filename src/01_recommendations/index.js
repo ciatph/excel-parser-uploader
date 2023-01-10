@@ -1,5 +1,6 @@
 require('dotenv').config()
 const path = require('path')
+const { CsvToFireStore } = require('csv-firestore')
 const SeasonalTab = require('./src/classes/seasonaltab')
 const TendayTab = require('./src/classes/tendaytab')
 const SpecialTab = require('./src/classes/specialtab')
@@ -15,6 +16,9 @@ const main = async () => {
 
   // Excel file path
   const filePath = path.join(__dirname, process.env.EXCEL_FILENAME)
+
+  // Firestore documents upload handler
+  const handler = new CsvToFireStore()
 
   // Excel tabs column names definitions
   const excelTabs = [
@@ -57,7 +61,16 @@ const main = async () => {
   if (upload) {
     try {
       data.forEach((item, index) => {
+        // Simple merged JSON data
         query.push(uploadToFirestore('n_list_crop_recommendations', item.recommendations.type, item.recommendations))
+
+        // Upload each recommendation row to a Document
+        // Path: /n_list_crop_recommendations_{type}
+        query.push(handler.firestoreUpload(
+          `n_list_crop_recommendations_${item.recommendations.type}`,
+          true,
+          item.recommendations.data
+        ))
       })
 
       // Upload data to Firestore

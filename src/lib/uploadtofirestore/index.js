@@ -9,11 +9,13 @@ const firestore = new FirestoreData()
  *    - {Object[]} data - crop recommendations mapped to crop stages, farm operations and other keys
  *    - {String} type - type of recommendations. One of RECOMMEDATIONS_TYPE.
  *    - {String} description - Brief text description describing the nature of data
+ * @param {Object} metadata - Key-value pairs description and other information about the data
  * @returns {Timestamp} Firestore timestamp of successful data upload
  */
-module.exports.uploadToFirestore = async (collectionName, docName, jsonData) => {
+module.exports.uploadToFirestore = async (collectionName, docName, jsonData, metadata) => {
   // CSV and Firestore handler
-  jsonData.date_created = firestore.admin.firestore.Timestamp.now()
+  jsonData.metadata = metadata ?? {}
+  jsonData.metadata.date_created = firestore.admin.firestore.Timestamp.now()
 
   try {
     // Upload data to Firestore
