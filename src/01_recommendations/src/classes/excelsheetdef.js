@@ -1,3 +1,5 @@
+const { CROP_STAGE_LABELS } = require('../../../02_crop_calendar/constants')
+
 class ExcelTabDefinition {
   /** Excel sheet tab number */
   excelTabNumber = -1
@@ -20,6 +22,13 @@ class ExcelTabDefinition {
     IMPACT_TAGALOG: 'impact_tagalog',
     PRACTICE: 'practice',
     PRACTICE_TAGALOG: 'practice_tagalog'
+  }
+
+  NORMAL_CROPSTAGE_CODES = {
+    'Newly Planted': Object.keys(CROP_STAGE_LABELS).find(key => CROP_STAGE_LABELS[key] === 'Newly Planted'),
+    'Vegetative/Reproductive': Object.keys(CROP_STAGE_LABELS).find(key => CROP_STAGE_LABELS[key] === 'Vegetative/Reproductive'),
+    Maturing: Object.keys(CROP_STAGE_LABELS).find(key => CROP_STAGE_LABELS[key] === 'Maturing'),
+    'Preparation Stage': Object.keys(CROP_STAGE_LABELS).find(key => CROP_STAGE_LABELS[key] === 'Preparation Stage')
   }
 }
 

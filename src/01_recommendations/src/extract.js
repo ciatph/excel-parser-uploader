@@ -1,4 +1,5 @@
 const XLSXWrapper = require('../../lib/xlsxwrapper')
+const { RECOMMEDATIONS_TYPE } = require('./constants')
 
 /**
  * Extract normalized recommendations data and other metadata from an excel sheet tab
@@ -28,8 +29,38 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
       const obj = {}
 
       for (const key in ExcelTab.EXCEL_COLUMN_NAMES) {
-        obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = item[key] || ''
-        obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = obj[ExcelTab.EXCEL_COLUMN_NAMES[key]].trim()
+        let value = item[key] || ''
+        value = value.trim()
+
+        switch (ExcelTab.type) {
+          case RECOMMEDATIONS_TYPE.SEASONAL:
+            // Normalize the seasonal forecast text
+            if (ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.FORECAST) {
+              value = ExcelTab.NORMAL_FORECAST_CODES[value]
+            }
+            break
+          default: break
+        }
+
+        // Insert <span> in <li>
+        switch (ExcelTab.EXCEL_COLUMN_NAMES[key]) {
+          case ExcelTab.NORMAL_COLUMN_NAMES.PRACTICE:
+          case ExcelTab.NORMAL_COLUMN_NAMES.PRACTICE_TAGALOG:
+          case ExcelTab.NORMAL_COLUMN_NAMES.IMPACT:
+          case ExcelTab.NORMAL_COLUMN_NAMES.IMPACT_TAGALOG:
+            value = value.replace(/<li>/g, '<li><span>')
+            value = value.replace(/<\/li>/g, '</span></li>')
+            break
+          default:
+            break
+        }
+
+        // Normalize the crop stage name - use crop calendar codes
+        if (ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.CROP_STAGE) {
+          value = ExcelTab.NORMAL_CROPSTAGE_CODES[value]
+        }
+
+        obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = value
       }
 
       list.push(obj)
@@ -37,6 +68,28 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
 
     return list
   }, [])
+
+  // Normalize the special recommendations' farm operations
+  if (ExcelTab.type === RECOMMEDATIONS_TYPE.SPECIAL) {
+    recommendations.data = recommendations.data.reduce((list, item, index) => {
+      const farmoperation = item[ExcelTab.NORMAL_COLUMN_NAMES.FARM_OPERATION]
+
+      // Expand the merged farm operations vertically
+      if (farmoperation.includes('/') && farmoperation !== 'Planting/Transplanting') {
+        const farmoperations = farmoperation.split('/').map(operations => operations.trim())
+
+        farmoperations.forEach((operation) => {
+          const temp = { ...item }
+          temp[ExcelTab.NORMAL_COLUMN_NAMES.FARM_OPERATION] = operation
+          list.push(temp)
+        })
+      } else {
+        list.push(item)
+      }
+
+      return list
+    }, [])
+  }
 
   // List unique crop stages
   const cropstages = recommendations.data.map(x => x[ExcelTab.NORMAL_COLUMN_NAMES.CROP_STAGE])
