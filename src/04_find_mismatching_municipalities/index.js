@@ -1,4 +1,5 @@
 const path = require('path')
+const { CsvToFireStore } = require('csv-firestore')
 const { municipalitiesFromCalendar } = require('./src/calendar')
 const { municipalitiesFromForecast } = require('./src/forecast')
 
@@ -13,6 +14,8 @@ const main = async () => {
   // PAGASA municipalities
   const { municipalities: forecastMunicipalities } = municipalitiesFromForecast(path.join(__dirname, process.env.EXCEL_FILENAME))
 
+  const handler = new CsvToFireStore()
+
   try {
     // Find municipalities in calendarMunicipalities that are not available in forecastMunicipalities
     const mismatchingNames = calendarMunicipalities.reduce((list, item) => {
@@ -26,6 +29,7 @@ const main = async () => {
     }, [])
 
     console.log(mismatchingNames)
+    handler.write(mismatchingNames, path.join(__dirname, 'municipalities.csv'))
   } catch (err) {
     console.log(err)
   }

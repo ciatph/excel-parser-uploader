@@ -131,5 +131,9 @@ Normalize and upload the new cropping calendar data.
 
 Normalize and upload the new municipalities and other details attached to the crop recommendations.
 
+### `npm run find:mismatching`
+
+Writes a list of municipalities from the cropping calendar that have mismatching names from the 10-day weather forecast excel file into a `municipalities.csv` CSV file.
+
 @ciatph<br>
 20221205
