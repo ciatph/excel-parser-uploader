@@ -42,6 +42,19 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
           default: break
         }
 
+        // Insert <span> in <li>
+        switch (ExcelTab.EXCEL_COLUMN_NAMES[key]) {
+          case ExcelTab.NORMAL_COLUMN_NAMES.PRACTICE:
+          case ExcelTab.NORMAL_COLUMN_NAMES.PRACTICE_TAGALOG:
+          case ExcelTab.NORMAL_COLUMN_NAMES.IMPACT:
+          case ExcelTab.NORMAL_COLUMN_NAMES.IMPACT_TAGALOG:
+            value = value.replace(/<li>/g, '<li><span>')
+            value = value.replace(/<\/li>/g, '</span></li>')
+            break
+          default:
+            break
+        }
+
         // Normalize the crop stage name - use crop calendar codes
         if (ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.CROP_STAGE) {
           value = ExcelTab.NORMAL_CROPSTAGE_CODES[value]
