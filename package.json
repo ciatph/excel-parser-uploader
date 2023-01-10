@@ -8,6 +8,7 @@
     "process:recommendations": "node src/01_recommendations",
     "process:calendar": "node src/02_crop_calendar",
     "process:details": "node src/03_recommendations_detail",
+    "find:mismatching": "node src/04_find_mismatching_municipalities",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix"
   },

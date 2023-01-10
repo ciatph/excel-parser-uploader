@@ -1,5 +1,5 @@
 const { CsvToFireStore } = require('csv-firestore')
-const { CROP_STAGE_LABELS } = require('./constants')
+const { CROP_STAGE_LABELS, MUNICIPALITIES_TO_REPLACE_WITH_PAGASA } = require('./constants')
 
 class CroppingCalendar extends CsvToFireStore {
   constructor (csvFilePath) {
@@ -18,6 +18,9 @@ class CroppingCalendar extends CsvToFireStore {
     this.crop_stages = []
 
     this.count = 0
+
+    // Municipalities that have different naming convention from the 10-day weather forecast files
+    this.susMunicipalities = MUNICIPALITIES_TO_REPLACE_WITH_PAGASA.map(item => item.municipality)
   }
 
   /**
@@ -84,6 +87,7 @@ class CroppingCalendar extends CsvToFireStore {
       }
 
       const value = row[item].trim()
+      let tempMunicipality = null
 
       // Extract unique provinces
       if (key === 'province' && !this.itemExists('province', value) && value !== '') {
@@ -95,13 +99,20 @@ class CroppingCalendar extends CsvToFireStore {
 
       // Extract unique municipalities
       if (key === 'municipality' && value !== '') {
-        const combo = `${row.prov.trim()}|${value}`
+        tempMunicipality = value.trim()
+
+        if (this.susMunicipalities.includes(tempMunicipality)) {
+          tempMunicipality = MUNICIPALITIES_TO_REPLACE_WITH_PAGASA.find(x =>
+            x.province === row.prov.trim() && x.municipality === value.trim())?.replace ?? value.trim()
+        }
+
+        const combo = `${row.prov.trim()}|${tempMunicipality}`
 
         if (!this.itemExists('municipality', combo)) {
           this.municipalities.push({
             id: this.municipalities.length + 1,
             province: row.prov.trim(),
-            name: value,
+            name: tempMunicipality,
             unique: combo
           })
         }
@@ -130,7 +141,9 @@ class CroppingCalendar extends CsvToFireStore {
       }
 
       if (include && ['province', 'municipality', 'crop'].includes(key)) {
-        obj[key] = value
+        obj[key] = (key === 'municipality')
+          ? tempMunicipality
+          : value
       }
     })
 
