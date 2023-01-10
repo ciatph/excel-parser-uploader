@@ -26,6 +26,14 @@ class SeasonalTab extends ExcelTabDefinition {
       'NEAR NORMAL': 'Near normal',
       'ABOVE NORMAL': 'Above Normal'
     }
+
+    /** Normalized weather forecast codes */
+    this.NORMAL_FORECAST_CODES = {
+      'WAY BELOW NORMAL': 'wb_normal',
+      'BELOW NORMAL': 'b_normal',
+      'NEAR NORMAL': 'near_normal',
+      'ABOVE NORMAL': 'above_normal'
+    }
   }
 }
 

@@ -36,10 +36,15 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
           case RECOMMEDATIONS_TYPE.SEASONAL:
             // Normalize the seasonal forecast text
             if (ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.FORECAST) {
-              value = ExcelTab.NORMAL_FORECAST_NAMES[value]
+              value = ExcelTab.NORMAL_FORECAST_CODES[value]
             }
             break
           default: break
+        }
+
+        // Normalize the crop stage name - use crop calendar codes
+        if (ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.CROP_STAGE) {
+          value = ExcelTab.NORMAL_CROPSTAGE_CODES[value]
         }
 
         obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = value
