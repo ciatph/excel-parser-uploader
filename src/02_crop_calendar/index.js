@@ -3,7 +3,7 @@ const path = require('path')
 const CroppingCalendar = require('./cropping_calendar')
 const { uploadToFirestore } = require('../lib/uploadtofirestore')
 
-// Path: /n_cropping_calendar_merged/{province}.data[]
+// Path: /n_cropping_calendar_lite/{province}.data[]
 const main = async () => {
   const handler = new CroppingCalendar(path.resolve(__dirname, process.env.CSV_FILENAME))
   const upload = false
@@ -11,8 +11,8 @@ const main = async () => {
 
   // Cropping Calendar-specific tables and firestore collection names
   const newTables = {
-    provinces: 'n_provinces',
-    municipalities: 'n_municipalities',
+    // provinces: 'n_provinces',
+    // municipalities: 'n_municipalities',
     crops: 'n_crops',
     crop_stages: 'n_crop_stages'
   }
@@ -73,6 +73,7 @@ const main = async () => {
       // Upload list data as documents
       console.log('Uploading lists in a single Firestore document...')
 
+      // Upload the list of provinces and respective municipalities for use as constant, static values
       query.push(uploadToFirestore('constant_data', 'provinces', {
         data: handler.provinces.reduce((list, province, index) => {
           const temp = { id: province.id, label: province.name }
