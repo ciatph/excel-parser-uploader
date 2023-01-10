@@ -1,42 +1,31 @@
 const path = require('path')
-const CroppingCalendar = require('../02_crop_calendar/cropping_calendar')
+const { municipalitiesFromCalendar } = require('./src/calendar')
+const { municipalitiesFromForecast } = require('./src/forecast')
 
 /**
  * Creates a list of mismatching municipality names from the cropping calendar and PAGASA 10-day weather forecast excel file.
  * Requires the cropping calendar CSV file and 1 of PAGASA's 10-day weather forecast EXCEL file.
  */
 const main = async () => {
-  const handler = new CroppingCalendar(path.resolve(__dirname, '..', '02_crop_calendar', process.env.CSV_FILENAME))
-  const write = true
+  // Read the cropping calendar file
+  const { municipalities: calendarMunicipalities } = await municipalitiesFromCalendar(path.join(__dirname, '..', '02_crop_calendar', process.env.CSV_FILENAME))
 
-  // Cropping Calendar-specific tables and firestore collection names
-  const newTables = {
-    provinces: 'n_provinces',
-    municipalities: 'n_municipalities',
-    crops: 'n_crops',
-    crop_stages: 'n_crop_stages'
-  }
+  // PAGASA municipalities
+  const { municipalities: forecastMunicipalities } = municipalitiesFromForecast(path.join(__dirname, process.env.EXCEL_FILENAME))
 
   try {
-    console.log('Reading CSV...')
-    await handler.readCSV()
-
-    if (write) {
-      // Write cropping calendar data to CSV files
-      console.log('\nWriting data to CSV...')
-      handler.write(handler.data(), path.resolve(__dirname, 'data.csv'))
-
-      for (const collection in newTables) {
-        handler.write(
-          (collection === 'municipalities')
-            ? handler[collection].map(x => ({ id: x.id, province: x.province, name: x.name }))
-            : handler[collection],
-          path.resolve(__dirname, `${newTables[collection]}.csv`
-          ))
-
-        console.log(`${collection}: ${handler[collection].length}`)
+    // Find municipalities in calendarMunicipalities that are not available in forecastMunicipalities
+    const mismatchingNames = calendarMunicipalities.reduce((list, item) => {
+      if (!forecastMunicipalities.find(x => x.province === item.province &&
+        x.municipality === item.municipality)
+      ) {
+        list.push(item)
       }
-    }
+
+      return list
+    }, [])
+
+    console.log(mismatchingNames)
   } catch (err) {
     console.log(err)
   }
