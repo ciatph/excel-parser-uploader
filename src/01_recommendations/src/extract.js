@@ -73,6 +73,7 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
         obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = value
       }
 
+      obj.id = list.length
       list.push(obj)
     }
 
