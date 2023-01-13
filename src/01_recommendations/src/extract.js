@@ -38,6 +38,16 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
             if (ExcelTab.EXCEL_COLUMN_NAMES[key] === ExcelTab.NORMAL_COLUMN_NAMES.FORECAST) {
               value = ExcelTab.NORMAL_FORECAST_CODES[value]
             }
+
+            // Change all <p> tags in NORMAL_COLUMN_NAMES.IMPACT to <li>
+            if ([ExcelTab.NORMAL_COLUMN_NAMES.IMPACT, ExcelTab.NORMAL_COLUMN_NAMES.IMPACT_TAGALOG]
+              .includes(ExcelTab.EXCEL_COLUMN_NAMES[key])
+            ) {
+              if (value.includes('<p>')) {
+                value = value.replace(/<p>/g, '<li>')
+                value = value.replace(/<\/p>/g, '</li>')
+              }
+            }
             break
           default: break
         }
@@ -63,6 +73,7 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
         obj[ExcelTab.EXCEL_COLUMN_NAMES[key]] = value
       }
 
+      obj.id = list.length
       list.push(obj)
     }
 
