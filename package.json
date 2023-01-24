@@ -25,7 +25,8 @@
   "devDependencies": {
     "eslint": "^8.29.0",
     "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-promise": "^6.1.1"
+    "eslint-plugin-promise": "^6.1.1",
+    "hili-lipsum": "^2.0.1"
   },
   "dependencies": {
     "csv-firestore": "^1.0.9",
