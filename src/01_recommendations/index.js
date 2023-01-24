@@ -58,6 +58,11 @@ const main = async () => {
   dataToCsv(uniqueStages, path.join(__dirname, 'crop_stages.csv'))
   dataToCsv(uniqueActivities, path.join(__dirname, 'farm_operations.csv'))
 
+  // Normalized crop recommendations data
+  data.forEach(item => {
+    dataToCsv(item.recommendations.data, path.join(__dirname, `n_list_crop_recommendations_${item.recommendations.type}.csv`))
+  })
+
   if (upload) {
     try {
       data.forEach((item, index) => {

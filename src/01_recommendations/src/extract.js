@@ -1,5 +1,6 @@
 const XLSXWrapper = require('../../lib/xlsxwrapper')
 const { RECOMMEDATIONS_TYPE } = require('./constants')
+const { randomWords } = require('./randomwords')
 
 /**
  * Extract normalized recommendations data and other metadata from an excel sheet tab
@@ -60,6 +61,12 @@ module.exports.extractExcelData = (ExcelTab, excelFilePath) => {
           case ExcelTab.NORMAL_COLUMN_NAMES.IMPACT_TAGALOG:
             value = value.replace(/<li>/g, '<li><span>')
             value = value.replace(/<\/li>/g, '</span></li>')
+
+            // Replace with random words
+            if (process.env.USE_RANDOM_WORDS === '1') {
+              value = randomWords(value)
+            }
+
             break
           default:
             break
